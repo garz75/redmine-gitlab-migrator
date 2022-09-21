@@ -205,13 +205,19 @@ def perform_migrate_pages(args):
     pages = []
     for page in redmine_project.get_all_pages():
         print("Collecting " + page["title"])
-        start_version = page["version"] if args.no_history else 1
-        for version in range(start_version, page["version"]+1):
+        if args.no_history:
             try:
-                full_page = redmine_project.get_page(page["title"], version)
+                full_page = redmine_project.get_page(page["title"], None)
                 pages.append(full_page)
             except:
-                log.error("Error when retrieving " + page["title"] + ", version " + str(version))
+                log.error("Error when retrieving " + page["title"])
+        else:
+            for version in range(1, page["version"]+1):
+                try:
+                    full_page = redmine_project.get_page(page["title"], version)
+                    pages.append(full_page)
+                except:
+                    log.error("Error when retrieving " + page["title"] + ", version " + str(version))
 
     # sort everything by date and convert
     pages.sort(key=lambda page: page["updated_on"])
@@ -407,7 +413,7 @@ def perform_redirect(args):
 
 def main():
     args = parse_args()
-
+    print('FGA Version - Ph34r!')
     if hasattr(args, 'func'):
         if args.debug:
             loglevel = logging.DEBUG
