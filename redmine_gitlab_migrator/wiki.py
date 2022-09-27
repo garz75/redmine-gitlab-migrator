@@ -153,7 +153,7 @@ class WikiPageConverter():
     def convert(self, redmine_page):
         title = self.textile_converter.normalize(redmine_page["title"])
         if (title == 'Wiki'):
-            title = 'home'
+            title = 'Home'
         print("Converting {} ({} version {})".format(title, redmine_page["title"], redmine_page["version"]))
 
         text = redmine_page.get('text', "")
