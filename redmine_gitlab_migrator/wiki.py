@@ -74,10 +74,10 @@ class TextileConverter():
             # is not handled. So let's fix that.
 
             # [[ wikipage | link_text ]] -> [link_text](wikipage)
-            text = re.sub(self.regexWikiLinkWithText, self.wiki_link, text, re.MULTILINE | re.DOTALL)
+            text = re.sub(self.regexWikiLinkWithText, self.wiki_link, text)
 
             # [[ link_url ]] -> [link_url](link_url)
-            text = re.sub(self.regexWikiLinkWithoutText, self.wiki_link, text, re.MULTILINE | re.DOTALL)
+            text = re.sub(self.regexWikiLinkWithoutText, self.wiki_link, text)
 
             # nested lists, fix at least the common issues
             text = text.replace("    \\#\\*", "    -")
@@ -87,16 +87,23 @@ class TextileConverter():
             text = text.replace("&gt; ", ">")
 
             # wiki note macros
-            text = re.sub(self.regexTipMacro, r'---\n**TIP**: \1\n---\n', text, re.MULTILINE | re.DOTALL)
-            text = re.sub(self.regexNoteMacro, r'---\n**NOTE**: \1\n---\n', text, re.MULTILINE | re.DOTALL)
-            text = re.sub(self.regexWarningMacro, r'---\n**WARNING**: \1\n---\n', text, re.MULTILINE | re.DOTALL)
-            text = re.sub(self.regexImportantMacro, r'---\n**IMPORTANT**: \1\n---\n', text, re.MULTILINE | re.DOTALL)
+            text = re.sub(self.regexTipMacro, r'---\n**TIP**: \1\n---\n', text)
+            text = re.sub(self.regexNoteMacro, r'---\n**NOTE**: \1\n---\n', text)
+            text = re.sub(self.regexWarningMacro, r'---\n**WARNING**: \1\n---\n', text)
+            text = re.sub(self.regexImportantMacro, r'---\n**IMPORTANT**: \1\n---\n', text)
+
+
+
+
+            text = re.sub(self.regexIncludeMacro, r'(include) [\1](\1)', text)
+
+            text = re.sub(re.compile('(proc_)'), r'Proc_', text)
 
             # all other macros
-            text = re.sub(self.regexAnyMacro, r'\1', text, re.MULTILINE | re.DOTALL)
+            text = re.sub(self.regexAnyMacro, r'\1', text)
 
             # attachments in notes
-            text = re.sub(self.regexAttachment, r"\n\n*(Merged from Redmine, please check first note for attachment named **\1**)*", text, re.MULTILINE | re.DOTALL)
+            text = re.sub(self.regexAttachment, r"\n\n*(Merged from Redmine, please check first note for attachment named **\1**)*", text)
 
             # code highlight
             codeHighlights = re.findall(self.regexCodeHighlight, text)
