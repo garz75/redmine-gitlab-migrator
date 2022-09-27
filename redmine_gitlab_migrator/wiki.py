@@ -29,6 +29,7 @@ class TextileConverter():
         self.regexParagraph = re.compile(r'p(\(+|(\)+)?>?|=)?\.', re.MULTILINE | re.DOTALL)
         self.regexCodeHighlight = re.compile(r'(<code\s?(class=\"(.*)\")?>).*(</code>)', re.MULTILINE | re.DOTALL)
         self.regexAttachment = re.compile(r'attachment:[\'\"“”‘’„”«»](.*)[\'\"“”‘’„”«»]', re.MULTILINE | re.DOTALL)
+        self.regexIncludeMacro = re.compile(r'include\((.*?)\)',re.DOTALL)
 
     def wiki_link(self, match):
         name = match.group(1)
@@ -38,6 +39,9 @@ class TextileConverter():
             text = name
 
         name = self.normalize(name).replace(' ', '_')
+        # RR Hack : Link names may have \, lets remove them, GL wiki (MD) does not like them
+        name = name.replace('\\', '')
+        text = text.replace('\\', '')
         return '[{}]({})'.format(text, name)
 
     def normalize(self, title):
@@ -61,8 +65,11 @@ class TextileConverter():
 
         # convert from textile to markdown
         try:
-            text = pypandoc.convert_text(text, 'markdown_strict', format='textile')
+            # RR Hack: Our wiki is already converted, but we need the code to fix links, etc. so disable pandonx conversion
+            # text = pypandoc.convert_text(text, 'markdown_strict', format='textile')
 
+            # RR Fix: For some reason we have dos style line termination
+            text = text.replace("\r", '')
             # pandoc does not convert everything, notably the [[link|text]] syntax
             # is not handled. So let's fix that.
 
@@ -148,12 +155,13 @@ class WikiPageConverter():
         file_name = title + ".textile"
         with open(self.repo_path + "/" + file_name, mode='wt', encoding='utf-8') as fd:
             print(text, file=fd)
-
         # replace some contents
         text = text.replace("{{lastupdated_at}}", redmine_page["updated_on"])
         text = text.replace("{{lastupdated_by}}", redmine_page["author"]["name"])
         text = text.replace("[[PageOutline]]", "")
         text = text.replace("{{>toc}}", "")
+        text = text.replace("{{toc}}", "")
+        text = text.replace("{{<toc}}", "")
 
         text = self.textile_converter.convert(text)
 
